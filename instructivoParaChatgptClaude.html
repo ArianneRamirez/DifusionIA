@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instructivo ChatGPT y Claude</title>
+
+<style>
+:root{
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --color-background-page:#f4f7fb;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f7f9fc;
+  --color-text-primary:#152033;
+  --color-text-secondary:#5f6c80;
+  --color-text-tertiary:#8995a8;
+  --color-border-secondary:#d8e0ec;
+  --color-border-tertiary:#edf1f7;
+  --border-radius-md:12px;
+  --border-radius-lg:18px;
+  --shadow-soft:0 18px 45px rgba(21,32,51,.10);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:linear-gradient(135deg,#f5f8fc 0%,#eef6f3 100%);color:var(--color-text-primary);padding:24px}
+.wrap{max-width:920px;margin:0 auto;padding:28px;background:rgba(255,255,255,.92);border:1px solid rgba(216,224,236,.8);border-radius:28px;box-shadow:var(--shadow-soft);backdrop-filter:blur(8px)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+/* Encabezado simple */
+.wrap:before{content:"Guía interactiva";display:inline-flex;margin-bottom:10px;padding:5px 10px;border-radius:999px;background:#e8f4f0;color:#0B7A5F;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.wrap:after{content:"Seleccioná una plataforma y avanzá por las pestañas para ver el instructivo paso a paso.";display:block;margin:-2px 0 22px;color:var(--color-text-secondary);font-size:14px;line-height:1.5}
+
+button{font-family:inherit}
+button:focus-visible{outline:3px solid rgba(16,163,127,.25);outline-offset:2px}
+
+/* Platform selector */
+.plat-row{display:flex;gap:12px;margin-bottom:1.5rem}
+.plat-btn{flex:1;padding:16px 14px;border-radius:var(--border-radius-lg);border:1px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;display:flex;align-items:center;gap:12px;box-shadow:0 8px 20px rgba(21,32,51,.05)}
+.plat-btn:hover{background:var(--color-background-secondary);transform:translateY(-2px);box-shadow:0 12px 28px rgba(21,32,51,.08)}
+.plat-btn.active{border-width:1.5px;box-shadow:0 14px 32px rgba(21,32,51,.10)}
+.plat-logo{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;box-shadow:inset 0 -8px 16px rgba(0,0,0,.08)}
+.plat-info{text-align:left}
+.plat-name{font-size:15px;font-weight:700;color:var(--color-text-primary)}
+.plat-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;padding:6px;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:999px}
+.tab{padding:8px 14px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--color-text-secondary);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s ease}
+.tab:hover{background:#fff;color:var(--color-text-primary)}
+.tab.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary);box-shadow:0 8px 18px rgba(21,32,51,.12)}
+
+/* Stepper */
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;gap:14px;padding:16px;border:1px solid var(--color-border-tertiary);border-radius:18px;cursor:pointer;transition:background .12s ease, transform .12s ease, box-shadow .12s ease}
+.step:hover{background:var(--color-background-secondary);transform:translateY(-1px);box-shadow:0 8px 22px rgba(21,32,51,.06)}
+.step:last-child{border-bottom:1px solid var(--color-border-tertiary)}
+.step-left{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;transition:all .18s ease}
+.step-line{width:1px;flex:1;min-height:12px;background:var(--color-border-tertiary);margin:4px 0}
+.step-body{flex:1;padding-bottom:2px}
+.step-title{font-size:15px;font-weight:750;color:var(--color-text-primary);margin-bottom:0;line-height:1.4}
+.step-detail{font-size:13px;color:var(--color-text-secondary);line-height:1.65;margin-top:9px;display:none}
+.step-detail.open{display:block;animation:fadeIn .18s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.step-tip{background:var(--color-background-secondary);border-left:3px solid;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:11px 13px;margin-top:12px;font-size:13px;color:var(--color-text-primary);line-height:1.5}
+.step-img{width:100%;max-width:400px;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-top:10px;overflow:hidden}
+
+/* Mockup screens */
+.mockup{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1rem;margin-top:12px;border:1px solid var(--color-border-tertiary)}
+.mockup-bar{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.mockup-dot{width:8px;height:8px;border-radius:50%}
+.mockup-url{flex:1;background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:999px;padding:4px 10px;font-size:11px;color:var(--color-text-tertiary)}
+.mockup-screen{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;min-height:80px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+.field-row{margin-bottom:10px}.field-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}.field-input{width:100%;background:var(--color-background-secondary);border:1px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:9px 10px;font-size:13px;color:var(--color-text-primary)}
+.btn-sim{display:inline-block;padding:8px 18px;border-radius:999px;font-size:13px;font-weight:700;cursor:default;border:none}.check-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--color-text-primary)}.check-box{width:16px;height:16px;border-radius:4px;border:1px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px}
+
+/* Config / tips cards */
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}.cfg-card{border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;background:var(--color-background-primary);box-shadow:0 8px 22px rgba(21,32,51,.04)}.cfg-card:hover{box-shadow:0 12px 28px rgba(21,32,51,.07)}.cfg-icon{font-size:20px;margin-bottom:7px}.cfg-title{font-size:14px;font-weight:750;color:var(--color-text-primary);margin-bottom:5px}.cfg-body{font-size:12.5px;color:var(--color-text-secondary);line-height:1.55}
+
+/* Good/bad examples */
+.gb-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.gb-box{border-radius:var(--border-radius-md);padding:11px 12px;font-size:12px;line-height:1.5}.gb-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}.tag-badge{display:inline-block;font-size:10px;padding:3px 8px;border-radius:999px;font-weight:700;margin-right:4px;margin-bottom:5px}
+
+/* Section label */
+.section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-tertiary);margin-bottom:10px;margin-top:.5rem}
+.info-row{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--color-text-primary);line-height:1.5;margin-bottom:8px}.info-icon{flex-shrink:0;margin-top:1px}
+.progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}.progress-bar{flex:1;height:6px;background:var(--color-border-tertiary);border-radius:999px;overflow:hidden}.progress-fill{height:100%;border-radius:999px;transition:width .3s}.progress-label{font-size:12px;color:var(--color-text-secondary);white-space:nowrap;font-weight:700}
+.vs-row{display:grid;grid-template-columns:1fr 24px 1fr;gap:0;align-items:start;margin-bottom:8px}.vs-cell{font-size:13px;color:var(--color-text-primary);line-height:1.5;padding:8px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}.vs-mid{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--color-text-tertiary);padding-top:10px}
+
+@media(max-width:720px){
+  body{padding:12px}.wrap{padding:20px;border-radius:22px}.plat-row{flex-direction:column}.tabs{border-radius:18px}.tab{flex:1;text-align:center}.cfg-grid,.gb-pair{grid-template-columns:1fr}.step{padding:14px}.step-title{font-size:14px}
+}
+@media(max-width:480px){
+  .cfg-grid{grid-template-columns:1fr}.plat-btn{padding:14px}.wrap:after{font-size:13px}.mockup-screen{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<h2 class="sr-only">Instructivo paso a paso: cómo crear tu cuenta y configurar ChatGPT y Claude con buenas prácticas</h2>
+
+<!-- Platform selector -->
+<p class="section-label">Elegí la plataforma</p>
+<div class="plat-row">
+  <button class="plat-btn active" onclick="setPlat('chatgpt',this)" style="border-color:#10a37f">
+    <div class="plat-logo" style="background:#10a37f;color:#fff">G</div>
+    <div class="plat-info">
+      <div class="plat-name">ChatGPT</div>
+      <div class="plat-sub">OpenAI · chat.openai.com</div>
+    </div>
+  </button>
+  <button class="plat-btn" onclick="setPlat('claude',this)" style="">
+    <div class="plat-logo" style="background:#D97706;color:#fff">C</div>
+    <div class="plat-info">
+      <div class="plat-name">Claude</div>
+      <div class="plat-sub">Anthropic · claude.ai</div>
+    </div>
+  </button>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="setTab('registro',this)">Registro</button>
+  <button class="tab" onclick="setTab('config',this)">Configuración inicial</button>
+  <button class="tab" onclick="setTab('primeros',this)">Primeros pasos</button>
+  <button class="tab" onclick="setTab('buenas',this)">Buenas prácticas</button>
+  <button class="tab" onclick="setTab('planes',this)">Planes y límites</button>
+</div>
+
+<!-- Content area -->
+<div id="content-area"></div>
+
+</div>
+
+<script>
+let plat = 'chatgpt';
+let tab = 'registro';
+
+const DATA = {
+  chatgpt: {
+    color: '#10a37f',
+    colorLight: '#E6F7F3',
+    colorDark: '#0B7A5F',
+    url: 'chat.openai.com',
+    registro: {
+      steps: [
+        {
+          title: 'Ingresá a chat.openai.com',
+          detail: 'Abrí tu navegador y escribí la dirección <strong style="font-weight:500">chat.openai.com</strong> en la barra de direcciones. Es la página oficial de OpenAI. No uses links de terceros.',
+          tip: '💡 Marcá la página como favorita para acceder fácilmente en el futuro.',
+          mockup: 'browser',
+          mockupUrl: 'chat.openai.com'
+        },
+        {
+          title: 'Hacé clic en "Sign up"',
+          detail: 'En la pantalla de bienvenida verás dos opciones: "Log in" (si ya tenés cuenta) y "Sign up" para crear una nueva. Hacé clic en <strong style="font-weight:500">Sign up</strong>.',
+          tip: '',
+          mockup: 'signup',
+          color: '#10a37f'
+        },
+        {
+          title: 'Elegí tu método de registro',
+          detail: 'Podés crear tu cuenta de tres formas: con tu dirección de email, con tu cuenta de Google (recomendado por ser más rápido), o con tu cuenta de Microsoft.',
+          tip: '💡 Usar "Continue with Google" es la opción más cómoda si ya tenés Gmail.',
+          mockup: 'methods',
+          methods: ['Continuar con Google','Continuar con Microsoft','Usar email y contraseña']
+        },
+        {
+          title: 'Completá el formulario de registro',
+          detail: 'Si elegiste email, ingresá tu dirección y creá una contraseña de al menos 8 caracteres. Asegurate de usar una contraseña que no uses en otros servicios.',
+          tip: '🔐 Contraseña segura: mezclá letras mayúsculas, minúsculas, números y símbolos. Ej: MiClase_IA2025!',
+          mockup: 'form',
+          fields: ['Tu dirección de email', 'Contraseña (mín. 8 caracteres)']
+        },
+        {
+          title: 'Verificá tu correo electrónico',
+          detail: 'OpenAI te enviará un email con un enlace de verificación. Abrí tu casilla, buscá el correo de "OpenAI" y hacé clic en el botón de confirmación. Revisá la carpeta de spam si no aparece.',
+          tip: '📧 El email llega en menos de 5 minutos. Si no lo recibís, revisá carpeta de Spam.',
+          mockup: 'verify'
+        },
+        {
+          title: 'Completá tu perfil (nombre y fecha de nacimiento)',
+          detail: 'OpenAI pedirá tu nombre y fecha de nacimiento para verificar que sos mayor de 13 años. Estos datos son necesarios para activar la cuenta.',
+          tip: '⚠️ Usá tu nombre real. La fecha de nacimiento no puede modificarse después.',
+          mockup: 'profile'
+        },
+        {
+          title: '¡Listo! Tu cuenta está activa',
+          detail: 'Serás redirigido a la interfaz de ChatGPT. Ya podés empezar a chatear. El plan gratuito incluye acceso a GPT-4o mini con algunas limitaciones.',
+          tip: '🎉 Primera cosa a hacer: escribí "Hola, soy nuevo/a ¿qué podés hacer por mí?"',
+          mockup: 'done'
+        }
+      ]
+    },
+    config: {
+      items: [
+        { icon:'👤', title:'Personalizá tu perfil', body:'Settings → Customize ChatGPT. Escribí tu nombre, a qué te dedicás y cómo querés que responda (formal, conciso, con ejemplos, etc.).' },
+        { icon:'🌐', title:'Idioma de la interfaz', body:'Settings → General → Language. Cambialo a "Spanish" para que toda la interfaz esté en castellano.' },
+        { icon:'🔒', title:'Privacidad de datos', body:'Settings → Data Controls. Desactivá "Improve the model for everyone" si no querés que tus chats sean usados para entrenamiento.' },
+        { icon:'🗂️', title:'Historial de chats', body:'Settings → Data Controls → Chat History & Training. Activado por defecto. Podés desactivarlo si querés más privacidad.' },
+        { icon:'💬', title:'Instrucciones personalizadas', body:'Settings → Personalization → Custom Instructions. Escribí una vez cómo querés que ChatGPT te responda siempre.' },
+        { icon:'🔑', title:'Activar autenticación en dos pasos', body:'Settings → Security → Two-step verification. Muy recomendable para proteger tu cuenta.' }
+      ]
+    },
+    primeros: {
+      steps: [
+        { title: 'Entendé la interfaz', detail: 'La pantalla principal tiene: barra lateral (historial de chats a la izquierda), área de conversación (centro) y caja de texto en la parte inferior para escribir tus mensajes.' },
+        { title: 'Escribí tu primer prompt', detail: 'Hacé clic en la caja de texto inferior. Escribí tu pregunta o pedido y presioná Enter o el botón con flecha. ChatGPT responde en segundos.' },
+        { title: 'Usá el menú de modelos', detail: 'En la parte superior podés seleccionar el modelo: GPT-4o (más avanzado), GPT-4o mini (más rápido, gratuito). El plan Free tiene acceso limitado al modelo avanzado.' },
+        { title: 'Explorá los GPTs', detail: 'Hacé clic en "Explore GPTs" para ver asistentes especializados: escritura, código, diseño, educación. Son versiones de ChatGPT preconfiguradas para tareas específicas (solo de pago)' },
+        { title: 'Organizá tus chats con carpetas', detail: 'En la barra lateral podés crear carpetas para organizar tus conversaciones por tema, proyecto o fecha. Clic derecho sobre un chat → "Add to folder".' },
+        { title: 'Compartí o exportá una conversación', detail: 'En el menú de cada chat podés generar un link para compartir la conversación, o exportar tu historial completo en Settings → Data Controls → Export data.' }
+      ]
+    },
+    buenas: [
+      { cat:'Prompts efectivos', color:'#10a37f', light:'#E6F7F3', dark:'#0B7A5F',
+        tips:[
+          { label:'Sé específico/a', bad:'Explicame marketing', good:'Explicame qué es el marketing de contenidos para una pyme que vende ropa, en términos simples, con 3 ejemplos.' },
+          { label:'Dá contexto', bad:'Hacé un resumen', good:'Soy docente de secundaria. Resumí este texto en 5 puntos clave para alumnos de 15 años.' },
+          { label:'Pedí un formato', bad:'Dame ideas', good:'Dame 5 ideas de negocio. Para cada una incluí: nombre, público objetivo y una ventaja competitiva. Formato: lista numerada.' }
+        ]
+      },
+      { cat:'Seguridad y privacidad', color:'#E24B4A', light:'#FCEBEB', dark:'#A32D2D',
+        tips:[
+          { label:'No compartas datos sensibles', bad:'Mi contraseña del banco es ABC123, ¿está segura?', good:'¿Cómo puedo crear contraseñas seguras para cuentas bancarias?' },
+          { label:'No compartas info personal de otros', bad:'Ana García, DNI 12345678, ¿cómo le escribo?', good:'¿Cómo escribir un email profesional a un cliente que no pagó?' },
+        ]
+      },
+      { cat:'Verificación de información', color:'#BA7517', light:'#FAEEDA', dark:'#854F0B',
+        tips:[
+          { label:'Verificá datos importantes', bad:'¿Cuántos habitantes tiene Argentina? (acepta sin verificar)', good:'Siempre chequeá cifras, fechas y citas en fuentes oficiales — ChatGPT puede cometer errores.' },
+        ]
+      }
+    ],
+    planes: {
+      free: { nombre:'Free', precio:'Gratis', color:'#10a37f', items:['Acceso a GPT-4o mini','Acceso limitado a GPT-4o','50 mensajes/día aprox.','Acceso a GPTs básicos','Generación de imágenes limitada'] },
+      plus: { nombre:'Plus', precio:'USD 20/mes', color:'#7F77DD', items:['Acceso completo a GPT-4o','Mayor límite de mensajes','Acceso a todos los GPTs','Generación de imágenes (DALL-E)','Acceso anticipado a funciones'] }
+    }
+  },
+
+  claude: {
+    color: '#D97706',
+    colorLight: '#FAEEDA',
+    colorDark: '#854F0B',
+    url: 'claude.ai',
+    registro: {
+      steps: [
+        {
+          title: 'Ingresá a claude.ai',
+          detail: 'Abrí tu navegador y escribí <strong style="font-weight:500">claude.ai</strong> en la barra de direcciones. Es la página oficial de Anthropic para acceder a Claude.',
+          tip: '💡 Marcá la página en favoritos para acceder más rápido después.',
+          mockup: 'browser',
+          mockupUrl: 'claude.ai'
+        },
+        {
+          title: 'Hacé clic en "Sign up"',
+          detail: 'En la pantalla de inicio verás las opciones de acceso. Hacé clic en <strong style="font-weight:500">Sign up</strong> para crear una cuenta nueva.',
+          tip: '',
+          mockup: 'signup',
+          color: '#D97706'
+        },
+        {
+          title: 'Elegí tu método de registro',
+          detail: 'Podés registrarte con tu dirección de email o usar tu cuenta de Google para un acceso más rápido.',
+          tip: '💡 "Continue with Google" es lo más cómodo si ya tenés Gmail activo.',
+          mockup: 'methods',
+          methods: ['Continuar con Google','Usar email y contraseña']
+        },
+        {
+          title: 'Ingresá tu email y creá una contraseña',
+          detail: 'Si elegiste email, ingresá tu dirección y creá una contraseña robusta. Anthropic enviará un código de verificación.',
+          tip: '🔐 Usá una contraseña diferente a las que ya tenés en otros servicios.',
+          mockup: 'form',
+          fields: ['Tu dirección de email', 'Contraseña']
+        },
+        {
+          title: 'Verificá tu correo',
+          detail: 'Revisá tu casilla. Anthropic te enviará un código de 6 dígitos o un enlace de verificación. Ingresá el código en la pantalla o hacé clic en el enlace.',
+          tip: '📧 Revisá Spam si no llega en 2-3 minutos. El código expira en 10 minutos.',
+          mockup: 'verify'
+        },
+        {
+          title: 'Aceptá los términos y condiciones',
+          detail: 'Leé brevemente los términos de uso de Anthropic. Marcá las casillas requeridas y continuá. Anthropic es conocida por sus políticas de seguridad y privacidad rigurosas.',
+          tip: '📋 Anthropic usa tus chats para mejorar los modelos salvo que lo desactives en configuración.',
+          mockup: 'terms'
+        },
+        {
+          title: '¡Cuenta activa! Ya podés usar Claude',
+          detail: 'Llegarás directamente a la interfaz de conversación. El plan gratuito incluye acceso a Claude con un límite diario de mensajes.',
+          tip: '🎉 Primera pregunta sugerida: "¿Qué sabés hacer y cuáles son tus limitaciones?"',
+          mockup: 'done'
+        }
+      ]
+    },
+    config: {
+      items: [
+        { icon:'👤', title:'Perfil y preferencias', body:'Hacé clic en tu nombre (parte inferior izquierda) → Profile. Podés agregar tu nombre y preferencias generales.' },
+        { icon:'💬', title:'Instrucciones de usuario', body:'Settings → Profile. En "What should Claude know about you?" describí quién sos y cómo querés que te responda siempre.' },
+        { icon:'🎨', title:'Estilo de respuesta', body:'Settings → Profile → "How would you like Claude to respond?". Podés pedir respuestas más cortas, más formales, con ejemplos, etc.' },
+        { icon:'🔒', title:'Privacidad de conversaciones', body:'Settings → Privacy. Podés optar por no contribuir al entrenamiento del modelo desactivando las opciones de mejora.' },
+        { icon:'📂', title:'Proyectos (Projects)', body:'Usá "Projects" para agrupar conversaciones relacionadas y darle contexto persistente a Claude sobre un tema específico.' },
+        { icon:'🌙', title:'Tema visual', body:'Settings → Appearance. Podés elegir entre modo claro, oscuro o automático según la configuración de tu sistema.' }
+      ]
+    },
+    primeros: {
+      steps: [
+        { title: 'Explorá la interfaz', detail: 'La pantalla principal tiene: historial de chats a la izquierda, área de conversación central, y caja de texto inferior. En la barra lateral también encontrás "New chat" y "Projects".' },
+        { title: 'Escribí tu primer mensaje', detail: 'Hacé clic en la caja de texto, escribí tu pregunta y presioná Enter. Claude responde con más detalle que otras IAs en general y tiende a dar contexto adicional.' },
+        { title: 'Probá los diferentes estilos', detail: 'Claude puede responder de manera más concisa o más extensa. Si la respuesta es muy larga, pedí: "Resumí eso en 3 puntos". Si es corta, pedí: "Desarrollá más el punto 2".' },
+        { title: 'Creá un Proyecto', detail: 'Los Proyectos permiten guardar contexto persistente. Ideal para cursos, trabajos de investigación o proyectos profesionales. Clic en "New project" → dale un nombre y una descripción.' },
+        { title: 'Usá Artifacts', detail: 'Si pedís código, documentos o tablas, Claude puede generarlos como "Artifacts" — elementos editables en un panel lateral. Son interactivos y se pueden copiar fácilmente.' },
+        { title: 'Subí archivos y documentos', detail: 'Podés subir PDFs, imágenes, hojas de cálculo y documentos de texto usando el botón de clip. Claude los leerá y podrá responder preguntas sobre su contenido.' }
+      ]
+    },
+    buenas: [
+      { cat:'Prompts efectivos', color:'#D97706', light:'#FAEEDA', dark:'#854F0B',
+        tips:[
+          { label:'Sé específico/a', bad:'Ayudame con mi trabajo', good:'Soy coordinadora de RRHH. Escribime un email para comunicar el nuevo política de vacaciones a 50 empleados, en tono amable pero profesional.' },
+          { label:'Iterá sobre la respuesta', bad:'(Acepta la primera respuesta)', good:'Eso está bien, pero hacé la introducción más breve y agregá un ejemplo concreto en el punto 3.' },
+        ]
+      },
+      { cat:'Aprovechar las fortalezas de Claude', color:'#D97706', light:'#FAEEDA', dark:'#854F0B',
+        tips:[
+          { label:'Análisis extensos', bad:'¿Qué pensás de este texto? (sin adjuntar nada)', good:'Adjuntá el PDF y pedí: "Analizá este contrato. Señalá cláusulas ambiguas o potencialmente desfavorables." Claude lee documentos largos muy bien.' },
+          { label:'Razonamiento paso a paso', bad:'¿Cuánto es el 15% de 347?', good:'Para problemas complejos pedí: "Pensá paso a paso antes de responder." Obtendrás respuestas más precisas.' },
+        ]
+      },
+      { cat:'Seguridad y privacidad', color:'#E24B4A', light:'#FCEBEB', dark:'#A32D2D',
+        tips:[
+          { label:'No compartas datos sensibles', bad:'Acá está el informe financiero confidencial de mi empresa...', good:'Resumí el tipo de información que contiene el documento sin incluir datos sensibles reales.' },
+        ]
+      }
+    ],
+    planes: {
+      free: { nombre:'Free', precio:'Gratis', color:'#D97706', items:['Acceso a Claude (modelo limitado)','Límite diario de mensajes','Sin acceso a Projects completo','Sin subida de archivos extendida','Artifacts básicos'] },
+      plus: { nombre:'Pro', precio:'USD 20/mes', color:'#7F77DD', items:['Acceso a Claude Sonnet y Opus','5× más mensajes que el plan Free','Projects con memoria persistente','Subida ilimitada de archivos','Acceso anticipado a funciones'] }
+    }
+  }
+};
+
+function setPlat(p, btn) {
+  plat = p;
+  document.querySelectorAll('.plat-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.borderWidth = '';
+  });
+  btn.classList.add('active');
+  btn.style.borderWidth = '1.5px';
+  render();
+}
+
+function setTab(t, btn) {
+  tab = t;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+let openStep = null;
+
+function toggleStep(i) {
+  openStep = openStep === i ? null : i;
+  render();
+}
+
+function render() {
+  const d = DATA[plat];
+  const color = d.color;
+  const colorLight = d.colorLight;
+  const colorDark = d.colorDark;
+  let html = '';
+
+  if (tab === 'registro') {
+    const steps = d.registro.steps;
+    const done = openStep !== null ? openStep + 1 : 0;
+    html += `<div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((done/steps.length)*100)}%;background:${color}"></div></div>
+      <span class="progress-label">${done}/${steps.length} pasos</span>
+    </div>`;
+    html += `<div class="steps">`;
+    steps.forEach((s, i) => {
+      const isOpen = openStep === i;
+      const isDone = openStep !== null && i < openStep;
+      html += `<div class="step" onclick="toggleStep(${i})">
+        <div class="step-left">
+          <div class="step-num" style="background:${isDone?color:isOpen?color:colorLight};color:${isDone||isOpen?'#fff':colorDark};border:1.5px solid ${isDone||isOpen?color:colorLight}">
+            ${isDone?'✓':i+1}
+          </div>
+          ${i < steps.length-1 ? `<div class="step-line" style="background:${isDone?color:'var(--color-border-tertiary)'}"></div>` : ''}
+        </div>
+        <div class="step-body">
+          <div class="step-title">${s.title}</div>
+          <div class="step-detail ${isOpen?'open':''}">
+            <p style="margin-bottom:${s.tip?'0':'0'}">${s.detail}</p>
+            ${s.tip ? `<div class="step-tip" style="border-left-color:${color};background:${colorLight};color:${colorDark}">${s.tip}</div>` : ''}
+            ${renderMockup(s, color, colorLight)}
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    html += `<p style="font-size:12px;color:var(--color-text-tertiary);margin-top:12px">Hacé clic en cada paso para ver el detalle y avanzar.</p>`;
+
+  } else if (tab === 'config') {
+    html += `<div class="section-label">Configuración recomendada después de crear tu cuenta</div>`;
+    html += `<div class="cfg-grid">`;
+    d.config.items.forEach(item => {
+      html += `<div class="cfg-card">
+        <div class="cfg-icon">${item.icon}</div>
+        <div class="cfg-title">${item.title}</div>
+        <div class="cfg-body">${item.body}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    html += `<div class="step-tip" style="border-left-color:${color};background:${colorLight};color:${colorDark};margin-top:14px">
+      <strong style="font-weight:500">Orden sugerido:</strong> Empezá por las instrucciones personalizadas y la privacidad de datos. Son las más impactantes para tu experiencia cotidiana.
+    </div>`;
+
+  } else if (tab === 'primeros') {
+    html += `<div class="section-label">Primeros pasos una vez dentro de ${plat==='chatgpt'?'ChatGPT':'Claude'}</div>`;
+    html += `<div class="steps">`;
+    d.primeros.steps.forEach((s, i) => {
+      const isOpen = openStep === i;
+      html += `<div class="step" onclick="toggleStep(${i})">
+        <div class="step-left">
+          <div class="step-num" style="background:${isOpen?color:colorLight};color:${isOpen?'#fff':colorDark};border:1.5px solid ${isOpen?color:colorLight}">${i+1}</div>
+          ${i < d.primeros.steps.length-1 ? `<div class="step-line"></div>` : ''}
+        </div>
+        <div class="step-body">
+          <div class="step-title">${s.title}</div>
+          <div class="step-detail ${isOpen?'open':''}">
+            <p>${s.detail}</p>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+
+  } else if (tab === 'buenas') {
+    d.buenas.forEach(sec => {
+      html += `<div class="section-label" style="margin-top:1rem">${sec.cat}</div>`;
+      sec.tips.forEach(tip => {
+        html += `<div style="margin-bottom:1rem">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">→ ${tip.label}</div>
+          <div class="gb-pair">
+            <div class="gb-box" style="background:#FCEBEB;border:0.5px solid #F09595">
+              <div class="gb-label" style="color:#A32D2D">Evitá esto</div>
+              <div style="color:#501313">${tip.bad}</div>
+            </div>
+            <div class="gb-box" style="background:${sec.light};border:0.5px solid ${sec.color}40">
+              <div class="gb-label" style="color:${sec.dark}">Hacé esto</div>
+              <div style="color:${sec.dark}">${tip.good}</div>
+            </div>
+          </div>
+        </div>`;
+      });
+    });
+    html += `<div class="step-tip" style="border-left-color:${color};background:${colorLight};color:${colorDark};margin-top:6px">
+      <strong style="font-weight:500">Regla de oro:</strong> La calidad de la respuesta depende de la calidad de tu pregunta. Sé específico/a, dá contexto y pedí el formato que necesitás.
+    </div>`;
+    
+    // Tip extra: nunca dar info sensible
+    html += `<div class="section-label" style="margin-top:1.25rem">Nunca ingreses estos datos</div>`;
+    const never = ['Contraseñas o PINs','Números de tarjetas de crédito','DNI, pasaporte o datos de identidad','Información médica confidencial','Datos de terceros sin su consentimiento','Secretos comerciales o contratos confidenciales'];
+    html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">`;
+    never.forEach(n => {
+      html += `<span class="tag-badge" style="background:#FCEBEB;color:#A32D2D">✗ ${n}</span>`;
+    });
+    html += `</div>`;
+
+  } else if (tab === 'planes') {
+    html += `<div class="section-label">Comparativa de planes</div>`;
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
+    ['free','plus'].forEach(p => {
+      const pl = d.planes[p];
+      html += `<div class="cfg-card" style="border:0.5px solid ${pl.color}30">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)">${pl.nombre}</div>
+            <div style="font-size:12px;color:var(--color-text-secondary)">${pl.precio}</div>
+          </div>
+          ${p==='plus'?`<span class="tag-badge" style="background:${pl.color}20;color:${pl.color}">Recomendado</span>`:''}
+        </div>
+        ${pl.items.map(it=>`<div class="info-row"><span class="info-icon" style="color:${pl.color}">✓</span><span>${it}</span></div>`).join('')}
+      </div>`;
+    });
+    html += `</div>`;
+    html += `<div class="step-tip" style="border-left-color:${color};background:${colorLight};color:${colorDark};margin-top:14px">
+      <strong style="font-weight:500">Recomendación para comenzar:</strong> Empezá con el plan gratuito para aprender. Considerá el plan pago si lo usás más de 1 hora diaria o necesitás subir archivos grandes.
+    </div>`;
+  }
+
+  document.getElementById('content-area').innerHTML = html;
+}
+
+function renderMockup(s, color, colorLight) {
+  if (!s.mockup) return '';
+  let m = `<div class="mockup" style="margin-top:10px">`;
+  m += `<div class="mockup-bar">
+    <div class="mockup-dot" style="background:#F09595"></div>
+    <div class="mockup-dot" style="background:#FAC775"></div>
+    <div class="mockup-dot" style="background:#97C459"></div>
+    <div class="mockup-url">${s.mockupUrl || ''}</div>
+  </div>`;
+  m += `<div class="mockup-screen">`;
+  if (s.mockup === 'browser') {
+    m += `<div style="text-align:center;padding:16px 0"><div style="font-size:22px;font-weight:500;color:${color};margin-bottom:8px">${plat==='chatgpt'?'ChatGPT':'Claude'}</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <span class="btn-sim" style="background:${colorLight};color:${color}">Log in</span>
+        <span class="btn-sim" style="background:${color};color:#fff">Sign up</span>
+      </div></div>`;
+  } else if (s.mockup === 'signup') {
+    m += `<div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px">Crear cuenta</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <span class="btn-sim" style="background:${colorLight};color:${color}">Log in</span>
+        <span class="btn-sim" style="background:${color};color:#fff;box-shadow:0 0 0 2px ${color}30">Sign up ←</span>
+      </div>`;
+  } else if (s.mockup === 'methods') {
+    m += `<div style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--color-text-primary)">¿Cómo querés registrarte?</div>`;
+    (s.methods||[]).forEach((meth,i) => {
+      m += `<div style="border:0.5px solid ${i===0?color:'var(--color-border-secondary)'};border-radius:var(--border-radius-md);padding:9px 12px;margin-bottom:7px;font-size:13px;color:${i===0?color:'var(--color-text-secondary)'};background:${i===0?colorLight:'transparent'}">${meth}${i===0?' ⭐':''}</div>`;
+    });
+  } else if (s.mockup === 'form') {
+    (s.fields||[]).forEach(f => {
+      m += `<div class="field-row">
+        <div class="field-label">${f}</div>
+        <div class="field-input">___________________</div>
+      </div>`;
+    });
+    m += `<span class="btn-sim" style="background:${color};color:#fff;display:inline-block;margin-top:4px">Continuar →</span>`;
+  } else if (s.mockup === 'verify') {
+    m += `<div style="text-align:center;padding:8px 0">
+      <div style="font-size:28px;margin-bottom:8px">📬</div>
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Revisá tu correo</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Te enviamos un enlace de verificación a tu email</div>
+      <div style="display:flex;gap:4px;justify-content:center;margin-top:12px">
+        ${[1,2,3,4,5,6].map(n=>`<div style="width:30px;height:36px;border:0.5px solid ${color};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:${color}">·</div>`).join('')}
+      </div>
+    </div>`;
+  } else if (s.mockup === 'terms') {
+    ['Tengo más de 13 años', 'Aceptar términos de uso', 'Aceptar política de privacidad'].forEach(t => {
+      m += `<div class="check-row">
+        <div class="check-box" style="background:${colorLight};border-color:${color};color:${color}">✓</div>
+        <span>${t}</span>
+      </div>`;
+    });
+  } else if (s.mockup === 'profile') {
+    m += `<div class="field-row"><div class="field-label">Nombre</div><div class="field-input">Tu nombre</div></div>`;
+    m += `<div class="field-row"><div class="field-label">Fecha de nacimiento</div><div class="field-input">DD / MM / AAAA</div></div>`;
+  } else if (s.mockup === 'done') {
+    m += `<div style="text-align:center;padding:12px 0">
+      <div style="font-size:28px;margin-bottom:8px">🎉</div>
+      <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">¡Cuenta creada!</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:12px">Ya podés empezar a conversar</div>
+      <span class="btn-sim" style="background:${color};color:#fff">Empezar a chatear →</span>
+    </div>`;
+  }
+  m += `</div></div>`;
+  return m;
+}
+
+// Init
+render();
+</script>
+
+</body>
+</html>
